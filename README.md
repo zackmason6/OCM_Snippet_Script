@@ -6,11 +6,13 @@ This repository contains:
 </ul>
 
 ## Dependencies
-xml.etree.ElementTree/n
-shutil\n
-filecmp\n
-os\n
-datetime from datetime\n
+<ul>
+  <li>shutil</li>
+  <li>filecmp</li>
+  <li>os</li>
+  <li>datetime</li>
+  <li>xml.etree.ElementTree</li>
+</ul>
 
 ## Instructions
 <ol>
