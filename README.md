@@ -14,8 +14,8 @@ This repository contains:
     <li>Replace the paths to latest and existing in the code with the paths to your directories</li>
     <li>Ensure that the keyword and ID snippets are located in your working directory and follow this naming convention: 
     inportID_keywords.xml and inportID_identifier.xml</li>
-    <li>Make sure that there are metadata files in your latest directory for the script to pick up</li>. 
-    <li>You might also want to add some metadata files to the existing directory to test functionality.</li>
+    <li>Make sure that there are metadata files in your latest directory for the script to pick up</li>
+    <li>You might also want to add some metadata files to the existing directory to test functionality</li>
   </ul>
   <li>Run OCMHarvest.py</li>
     <ul>
