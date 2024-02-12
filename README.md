@@ -5,11 +5,19 @@ This repository contains:
   <li>Three .txt thesaurus files used to validate the keywords within the XML metadata files</li>
 </ul>
 
+## Dependencies
+xml.etree.ElementTree
+shutil
+filecmp
+os
+datetime from datetime
+
 ## Instructions
 <ol>
   <li>Create your test environment</li>
   <ul>
     <li>Create a new directory and clone this repository</li>
+    <li>pip install all dependencies</li>
     <li>Create a "latest" and "existing" directory</li> 
     <li>Replace the paths to latest and existing in the code with the paths to your directories</li>
     <li>Ensure that the keyword and ID snippets are located in your working directory and follow this naming convention: 
