@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import os
 
 """
 Version1.1 of keywordValidate.py
@@ -32,17 +33,25 @@ This is file number 3 of 3 for this workflow.
 
 """
 
-myFileList = []
-with open("OCM_Metadata_For_Snippets.txt", "r", encoding="utf-8") as filesToValidate:
-    Lines = filesToValidate.readlines()
-for line in Lines:
-    myFileList.append(line)
-print("MY FILE LIST: " + str(myFileList))
-for item in myFileList:
-    with open(item, "r") as xmlFile:
-            data = xmlFile.read()
-    print(str(data))
 
+myFileList = [] # Set up data structure to hold list of files that need to be operated on
+with open("OCM_Metadata_For_Snippets.txt", "r", encoding="utf-8") as filesToValidate:   # Open file that contains filenames that need to be checked
+    Lines = filesToValidate.readlines() # read each line of the file
+for line in Lines:
+    line = line.strip()
+    myFile = "\\existing\\" + str(line)
+    myFile = os.path.join(os.getcwd()+str(myFile))
+    myFileList.append(myFile) # Create list. Each list item is one line from the above file
+
+# The block below is commented out as unnecessary. It just prints the list of files and the contents of each
+# This was really just for testing the output of a single xml file.
+#print("MY FILE LIST: " + str(myFileList))
+#for item in myFileList:
+#    with open(item, "r") as xmlFile:
+#            data = xmlFile.read()
+#    print(str(data))
+
+# Set up a dictionary of namespaces
 namespaces = {
     'gco':'http://www.isotc211.org/2005/gco',
     'gmd':'http://www.isotc211.org/2005/gmd',
@@ -59,25 +68,36 @@ namespaces = {
 }
 
 def searchXML(root, xpath):
+    """
+    This function searches an xml file (that has been read as data) for a specific xpath
+
+    root = xml string data created by reading in xml files as a string and then using element tree to create a tree
+    xpath = xpath location to search
+
+    This function will find thesauruses used and all associated keywords and return both in a dictionary format
+    """
     organizedDictionary = {}
     elementList = []
-    elements = root.findall(xpath, namespaces)
-    if elements is not None:
+    elements = root.findall(xpath, namespaces) # finds a list of elements that have the indicated xpath
+    if elements is not None: # if there are any results of the above search:
         if len(elements) > 0:
             for element in elements:
-                tempKeywordList = []
-                thesaurus = element.find("gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString", namespaces)
-                if thesaurus is not None and "coris" in thesaurus.text.lower():
-                    print("THESAURUS FOUND: " + thesaurus.text)
-                    keywords = element.findall("gmd:keyword/gco:CharacterString",namespaces)
+                tempKeywordList = [] # create a temporary list to hold the search results
+                thesaurus = element.find("gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString", namespaces) # find the appropriate thesaurus
+                if thesaurus is not None and "coris" in thesaurus.text.lower(): # If there is a coris thesaurus indicated:
+                    #print("THESAURUS FOUND: " + thesaurus.text)
+                    keywords = element.findall("gmd:keyword/gco:CharacterString",namespaces) # Find the keywords
                     for keyword in keywords:
-                        print(keyword.text)
+                        #print(keyword.text)
                         tempKeywordList.append(keyword.text)
-                    tempDict = {thesaurus.text:tempKeywordList}
+                    tempDict = {thesaurus.text:tempKeywordList} 
                     organizedDictionary.update(tempDict)
-            return organizedDictionary
+            return organizedDictionary  # Returns the type of keyword and then list of associated keywords
 
 def createKeywordList(fileName):
+    """
+    This function reads through a given filename and creates a list of keywords from each line in the file.
+    """
     newKeywordList = []
     with open(fileName, "rb") as fp:
         for line in fp:
@@ -87,16 +107,32 @@ def createKeywordList(fileName):
     return newKeywordList
 
 def validate_keywords(myKeywordList, myThesaurus, myFile):
+    """
+    This function cross-references keywords in the list of keywords found in each file with the
+    appropriate keyword thesaurus.
+
+    If a bad keyword is found, the function will create a dictionary of the file that contains the
+    bad keyword, and then a list of the bad keywords themselves. RIGHT NOW THIS IS JUST PRINTED TO
+    THE SCREEN. THIS OUTPUT SHOULD LIKELY BE SENT AS AN EMAIL. IF RAN ON A CRON JOB ALL OUTPUT CAN 
+    EASILY BE REDIRECTED. HOWEVER, THIS SHOULD BE DECIDED SOONER RATHER THAN LATER.
+
+    myKeywordList: list of keywords found in the metadata file
+
+    myThesaurus: thesaurus text file determined by scanning the metadata file for thesaurus type. This can be
+      discovery, theme, or place.
+
+    
+    """
     for keyword in myKeywordList:
         #print("CHECKING THIS KEYWORD: " + str(keyword))
         keywordMatch = False
         if str(keyword) in myThesaurus:
             for corisKeyword in myThesaurus:
                 if keyword == corisKeyword:
-                    print("CoRIS KEYWORD FOUND: " + str(keyword))
+                    #print("CoRIS KEYWORD FOUND: " + str(keyword))
                     keywordMatch = True
-        else: 
-            print("BAD KEYWORD FOUND: " + str(keyword))
+        #else: 
+        #    print("BAD KEYWORD FOUND: " + str(keyword))
         if keywordMatch == False:
             tempDict = {str(myFile):[str(keyword)]}
             if str(myFile) not in badKeywordDict.keys():
@@ -104,6 +140,8 @@ def validate_keywords(myKeywordList, myThesaurus, myFile):
             else:
                 badKeywordDict[str(myFile)].append(str(keyword))      
 
+
+# The block below takes the text file thesauruses and turns them into lists by reading them one line at a time.
 placeKeywordFile = "corisPlace.txt"
 placeKeywordList = createKeywordList(placeKeywordFile)
 
@@ -117,22 +155,25 @@ themeKeywordList = createKeywordList(themeKeywordFile)
 keywordsLocation = ".//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords"
 keywordTypeLocation = ".//gmd:identificationInfo/gmd:MD_DataIdentification/gmd:descriptiveKeywords/gmd:MD_Keywords/gmd:type"
 
-badKeywordDict = {}
+badKeywordDict = {} # Set up blank dictionary to house the bad keyword dictionary that is generated by the validate_keywords function
 
-for myFile in myFileList:
-    tempDict = {}
+for myFile in myFileList: # Iterate over each file in the file list and validate their keywords.
+    tempDict = {} # Set up a temporary dictionary for some reason? THIS SHOULD LIKELY BE REMOVED! ARTIFACT OF A PREVIOUS BUILD OR SOMETHING
     xml_content = open(myFile, 'r')
-    data = xml_content.read()
-    root = ET.fromstring(data)
-    myKeywordDict = searchXML(root, keywordsLocation)
-    placeKeywordsFromFile = myKeywordDict.get("CoRIS Place Thesaurus")
-    print("PLACE KEYWORDS: " + str(placeKeywordsFromFile))
-    themeKeywordsFromFile = myKeywordDict.get("CoRIS Theme Thesaurus")
-    print("THEME KEYWORDS: " + str(themeKeywordsFromFile))
-    discoveryKeywordsFromFile = myKeywordDict.get("CoRIS Discovery Thesaurus")
-    print("discovery KEYWORDS: " + str(discoveryKeywordsFromFile))
-    validate_keywords(placeKeywordsFromFile, placeKeywordList, myFile)
-    validate_keywords(themeKeywordsFromFile, placeKeywordList, myFile)
-    validate_keywords(discoveryKeywordsFromFile, placeKeywordList, myFile)
-
-    print("\n" + str(badKeywordDict))
+    data = xml_content.read() # Read in xml data as a string
+    root = ET.fromstring(data) # Use element tree to get a tree from the string data
+    myKeywordDict = searchXML(root, keywordsLocation) # get a dictionary of thesaurus type and keywords found in the xml data
+    placeKeywordsFromFile = myKeywordDict.get("CoRIS Place Thesaurus") # Grab all place keywords from the keyword dictionary
+    print("\nPLACE KEYWORDS: " + str(placeKeywordsFromFile))
+    themeKeywordsFromFile = myKeywordDict.get("CoRIS Theme Thesaurus") # Grab all the theme keywords from the keyword dictionary
+    print("\nTHEME KEYWORDS: " + str(themeKeywordsFromFile))
+    discoveryKeywordsFromFile = myKeywordDict.get("CoRIS Discovery Thesaurus") # Grab all the discovery keywords from the keyword dictionary
+    print("\nDISCOVERY KEYWORDS: " + str(discoveryKeywordsFromFile)+"\n")
+    validate_keywords(placeKeywordsFromFile, placeKeywordList, myFile) # Validate place keywords against place keyword dictionary
+    validate_keywords(themeKeywordsFromFile, themeKeywordList, myFile) # Validate theme keywords against theme keyword dictionary
+    validate_keywords(discoveryKeywordsFromFile, discoveryKeywordList, myFile) # Validate discovery keywords against discovery keyword dictionary
+    if len(badKeywordDict) >0:
+        print("\n" + "List of bad keywords for "+ str(myFile) + ": " + str(badKeywordDict)) # Print out the bad keywords dictionary. (FILENAME: [List of bad keywords])
+    # MAYBE ADD A MORE DETAILED PRINT OUTPUT WITH SOME EXPLANATION? 
+    # printing the bad keywords is important - if we run on a cronjob just redirect it to email output.
+    # Should this be sent to a spreadsheet or text file somewhere instead?
