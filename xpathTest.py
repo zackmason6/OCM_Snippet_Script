@@ -30,6 +30,7 @@ with open("OCM_Metadata_For_Snippets.txt", "r", encoding="utf-8") as filesToEdit
     Lines = filesToEdit.readlines()
 
 for line in Lines:
+    #print("Got this line: " + str(line))
     myFileList.append(line)
     
 
@@ -95,7 +96,7 @@ def insertSnippet(data,spl_word,snippetData):
     firstPart = data.split(spl_word,1)[0]
     secondPart = "         " + spl_word + data.split(spl_word,1)[1]
     fullXML = firstPart + "\n" + snippetData + "\n" + secondPart
-    print(secondPart)
+    #print(secondPart)
     return fullXML
 
 def updateEditDate(myXML):
@@ -109,7 +110,7 @@ def updateEditDate(myXML):
     #print("CURRENT TIME IS: " + str(currentTime))
 
     for editDate in myRoot.findall(editDateLocation, namespaces):
-        print("FOUND AN EDIT DATE")
+        #print("FOUND AN EDIT DATE")
         editDate.text = (str(currentTime))
         tree.write(myXML)
 
@@ -121,23 +122,38 @@ def updateEditDate(myXML):
 
 for myFile in myFileList:
     # Check to see if snippet exists. If not, don't add it. Write that check here.
-    keyWordSnippetFile = str(myFile).replace(".xml","") + "_keywords.xml"
-    idSnippetFile = str(myFile).replace(".xml","") + "_identifier.xml"
+    myFile = myFile.strip()
+    print(str(myFile)+"\n")
+    #myFile = str(myFile) + "\\keywords\\"
+    myKeywordFile = "\\keywords\\" + str(myFile)
+    myIDFile = "\\identifier\\" + str(myFile)
+    keyWordSnippetFile = os.path.join(os.getcwd()+myKeywordFile)
+    idSnippetFile = os.path.join(os.getcwd()+ str(myIDFile))
 
-    print("Looking for this keyword snippet file: " + str(keyWordSnippetFile))
-    print("Looking for this ID snippet file: " + str(idSnippetFile))
+    #print("Looking for this keyword snippet file: " + str(keyWordSnippetFile))
+    #print("Looking for this ID snippet file: " + str(idSnippetFile))
 
     doTheSnippetsExist = True
-
+    
     if os.path.exists(keyWordSnippetFile) == True:
         keywordSnippet = open(keyWordSnippetFile, 'r')
         keywordSnippetData = keywordSnippet.read()
     else:
         print("Couldn't find keyword snippet for this record: " + str(myFile))
         doTheSnippetsExist = False
+
+    if os.path.exists(keyWordSnippetFile) == True:
+        keywordSnippet = open(keyWordSnippetFile, 'r')
+        garbageLine = keywordSnippet.readline()
+        keywordSnippetData = keywordSnippet.read()
+
+    else:
+        print("Couldn't find keyword snippet for this record: " + str(myFile))
+        doTheSnippetsExist = False
    
     if os.path.exists(idSnippetFile) == True:
         idSnippet = open(idSnippetFile, "r")
+        garbageLine = idSnippet.readline()
         idSnippetData = idSnippet.read()
     else:
         print("Couldn't find ID snippet for this record: " + str(myFile))
@@ -146,9 +162,14 @@ for myFile in myFileList:
     if doTheSnippetsExist == True:
         titleFlag = 0
         keywordFlag = 0
-
+        myFile = "\\existing\\" + str(myFile)
+        myFile = os.path.join(os.getcwd()+str(myFile))
+        print("TRYING TO READ FROM THIS FILE: " + str(myFile))
         xml_content = open(myFile, 'r')
         data = xml_content.read()
+        #data = data.replace('<?xml version="1.0" encoding="UTF-8"?>','')
+        data = data.strip()
+        #print(str(data))
         root = ET.fromstring(data)
 
         updateEditDate(myFile)
@@ -163,8 +184,10 @@ for myFile in myFileList:
         # Write the XML content to the file
             xml_file.write(xmlStringWithID)
 
-        xml_content = open("combined.xml", 'r')
+        xml_content = open(myFile, 'r', encoding="utf-8")
         data = xml_content.read()
+        data = data.replace('<?xml version="1.0" encoding="UTF-8"?>','')
+        data = data.strip()
         root = ET.fromstring(data)
         # Search XML for a few things
         # Get Inport ID
@@ -173,17 +196,17 @@ for myFile in myFileList:
         print("HERE IS YOUR INPORT ID: " + str(inportID))
         # Get Organization Name
         orgName = searchXML(root, orgNameLocation)
-        print("HERE IS YOUR ORGANIZATION NAME: " + str(orgName))
+        #print("HERE IS YOUR ORGANIZATION NAME: " + str(orgName))
         # Get Title
         title = searchXML(root, titleLocation)
-        print("HERE IS YOUR TITLE: " + str(title))
+        #print("HERE IS YOUR TITLE: " + str(title))
         # Get Place Keywords
         placeKeywords = searchXML(root, placeKeywordsLocation1)
         if placeKeywords is None:
             placeKeywords = searchXML(root, placeKeywordsLocation2)
-        print("HERE ARE YOUR KEYWORDS: ")
-        for keyword in placeKeywords:
-            print(" " + str(keyword))
+        #print("HERE ARE YOUR KEYWORDS: ")
+        #for keyword in placeKeywords:
+            #print(" " + str(keyword))
 
 
         #Standardize input and output
@@ -210,9 +233,9 @@ for myFile in myFileList:
     
         # Title Filter
         for keyword in standardizedTitleKeywords:
-            print("LOOKING FOR THIS KEYWORD IN THE TITLE: " + keyword)
+            #print("LOOKING FOR THIS KEYWORD IN THE TITLE: " + keyword)
             if keyword in title.lower():
-                print("FOUND IT!\n")
+                #print("FOUND IT!\n")
                 titleFlag = 1
                 break
         if titleFlag == 1:
@@ -225,22 +248,22 @@ for myFile in myFileList:
 
         # Keyword Search
         for keyword in standardizedPlaceMatch:
-            print("LOOKING FOR THIS KEYWORD IN PLACE KEYWORDS: " + keyword)
+            #print("LOOKING FOR THIS KEYWORD IN PLACE KEYWORDS: " + keyword)
             if keyword in standardizedPlaceKeywords:
-                print("FOUND IT!")
+                #print("FOUND IT!")
                 if keyword.lower() not in searchTheseLocationsByCounty:
                     keywordFlag = 1
                 break
 
-        print("LOOKING FOR COUNTY STUFF NOW")
+        #print("LOOKING FOR COUNTY STUFF NOW")
         for location in searchTheseLocationsByCounty:
-            print("Looking for this location: " + location)
+            #print("Looking for this location: " + location)
             if location in standardizedPlaceKeywords:
                 print("COUNTY SEARCH NECESSARY\n")
                 for keyword in standardizedPlaceMatchCounty:
-                    print("Looking for this county keyword: " + keyword)
+                    #print("Looking for this county keyword: " + keyword)
                     if keyword in standardizedPlaceKeywords:
-                        print("FOUND THIS ONE: " + keyword)
+                        #print("FOUND THIS ONE: " + keyword)
                         keywordFlag = 1
                         break
                 if keywordFlag == 1:
