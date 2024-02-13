@@ -54,7 +54,8 @@ This repository contains:
     <li>Add to the list of locations to search by county</li>
   </ul>
   <li>Check old scripts for other search parameters. Special operation for LIDAR or IFSAR records?</li>
-  <li></li>
-  <li></li>
+  <li>Need to implement functionality to check for deleted files</li>
+  <li>Implement email functionality (through cronjob?)</li>
+  <li>Test on coris.ams</li>
 </ul>
 
