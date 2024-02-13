@@ -43,3 +43,18 @@ This repository contains:
       <li>This script validates keywords for every file within the list created by OCMHarvest.py</li>
     </ul>
 </ol>
+
+## To-Do List
+<ul>
+  <li>The script needs to copy files from existing to no-harvest</li>
+  <li>Test functionality for editing modified files found in the existing directory (currently only the new file functionality has been tested</li>
+  <li>Add functionality to fix frequent keyword errors</li>
+  <li>Implement configuration file to add keyword search parameters for locations like Florida counties</li>
+  <ul>
+    <li>Add to the list of locations to search by county</li>
+  </ul>
+  <li>Check old scripts for other search parameters. Special operation for LIDAR or IFSAR records?</li>
+  <li></li>
+  <li></li>
+</ul>
+
