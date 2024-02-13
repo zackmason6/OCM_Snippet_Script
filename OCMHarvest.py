@@ -2,6 +2,7 @@ import os
 import filecmp
 import shutil
 
+
 """
 This gets a list of xml files from the latest directory and compares it with 
 a list from the existing directory. If new files or revised files are found,
@@ -101,6 +102,6 @@ listOutputFile = "OCM_Metadata_For_Snippets.txt"
 
 with open(listOutputFile, "w", encoding="utf-8") as outputFile:
     for record in listOfFilesToEdit:
-        outputFile.write(str(record))
+        outputFile.write(str(record)+"\n")
 
 
