@@ -57,5 +57,6 @@ This repository contains:
   <li>Need to implement functionality to check for deleted files</li>
   <li>Implement email functionality (through cronjob?)</li>
   <li>Test on coris.ams</li>
+  <li>Remove old metadata files from the latest directory?? Or update them with the snippets as well? Currently only updating the existing directory</li>
 </ul>
 
