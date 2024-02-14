@@ -47,7 +47,6 @@ This repository contains:
 ## To-Do List
 <ul>
   <li>The script needs to copy files from existing to no-harvest</li>
-  <li>Test functionality for editing modified files found in the existing directory (currently only the new file functionality has been tested</li>
   <li>Add functionality to fix frequent keyword errors</li>
   <li>Implement configuration file to add keyword search parameters for locations like Florida counties</li>
   <ul>
