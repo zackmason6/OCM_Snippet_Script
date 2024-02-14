@@ -14,17 +14,17 @@ This repository contains:
   <li>xml.etree.ElementTree</li>
 </ul>
 
-## Instructions
+## Testing Instructions
+### This may be a bit out of date
 <ol>
   <li>Create your test environment</li>
   <ul>
     <li>Create a new directory and clone this repository</li>
     <li>pip install all dependencies</li>
-    <li>Create a "latest" and "existing" directory</li> 
-    <li>Replace the paths to latest and existing in the code with the paths to your directories</li>
+    <li>Create a "latest" and "existing" directory within your working directory</li> 
     <li>Ensure that the keyword and ID snippets are located in corresponding keywords and identifier directories and follow the inport ID naming convention</li>
-    <li>Make sure that there are metadata files in your latest directory for the script to pick up</li>
-    <li>You might also want to add some metadata files to the existing directory to test functionality</li>
+    <li>Make sure that there are metadata files in the latest and/or existing directory for the script to pick up</li>
+    <li>Ensure that the necessary thesauri are in your working directory</li>
   </ul>
   <li>Run OCMHarvest.py</li>
     <ul>
