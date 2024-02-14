@@ -49,9 +49,11 @@ def getFileList(myDirectory):
 # THIS SHOULD BE REVERTED PRIOR TO ANY ACTUAL TESTING!!!!!!!!!!
 
 #existing = "/nodc/projects/coris/Metadata/OCMharvest/existing"
-existing = "C:\\Users\\Zachary.T.Mason\\Desktop\\Coding\\CodingProjects\\OCMHarvest\\existing\\"
+#existing = "C:\\Users\\Zachary.T.Mason\\Desktop\\Coding\\CodingProjects\\OCMHarvest\\existing\\"
+existing = os.path.join(os.getcwd()+"\\existing\\")
 #latest = "/nodc/projects/coris/Metadata/OCMharvest/latest"
-latest = "C:\\Users\\Zachary.T.Mason\\Desktop\\Coding\\CodingProjects\\OCMHarvest\\latest\\"
+#latest = "C:\\Users\\Zachary.T.Mason\\Desktop\\Coding\\CodingProjects\\OCMHarvest\\latest\\"
+latest = os.path.join(os.getcwd()+"\\latest\\")
 
 existingList = getFileList(existing)
 latestList = getFileList(latest)
