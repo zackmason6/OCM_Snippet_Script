@@ -47,7 +47,6 @@ This repository contains:
 ## To-Do List
 <ul>
   <li>The script needs to copy files from existing to no-harvest</li>
-  <li>Test functionality for editing modified files found in the existing directory (currently only the new file functionality has been tested</li>
   <li>Add functionality to fix frequent keyword errors</li>
   <li>Implement configuration file to add keyword search parameters for locations like Florida counties</li>
   <ul>
@@ -55,7 +54,11 @@ This repository contains:
   </ul>
   <li>Check old scripts for other search parameters. Special operation for LIDAR or IFSAR records?</li>
   <li>Need to implement functionality to check for deleted files</li>
+    <ul>
+      <li>Compare records found in latest/existing to records in the WAF. If something is missing from existing/latest do we pull it from the WAF or just send an alert?</li>
+    </ul>
   <li>Implement email functionality (through cronjob?)</li>
   <li>Test on coris.ams</li>
+  <li>Remove old metadata files from the latest directory?? Or update them with the snippets as well? Currently only updating the existing directory</li>
 </ul>
 
