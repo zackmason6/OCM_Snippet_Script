@@ -54,6 +54,9 @@ This repository contains:
   </ul>
   <li>Check old scripts for other search parameters. Special operation for LIDAR or IFSAR records?</li>
   <li>Need to implement functionality to check for deleted files</li>
+    <ul>
+      <li>Compare records found in latest/existing to records in the WAF. If something is missing from existing/latest do we pull it from the WAF or just send an alert?</li>
+    </ul>
   <li>Implement email functionality (through cronjob?)</li>
   <li>Test on coris.ams</li>
   <li>Remove old metadata files from the latest directory?? Or update them with the snippets as well? Currently only updating the existing directory</li>
