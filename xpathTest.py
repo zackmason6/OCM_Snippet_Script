@@ -24,6 +24,7 @@ This is file number 2 of 3 for this workflow.
 
 """
 
+badFileList = []
 myFileList = []
 
 with open("OCM_Metadata_For_Snippets.txt", "r", encoding="utf-8") as filesToEdit:
@@ -123,7 +124,7 @@ def updateEditDate(myXML):
 for myFile in myFileList:
     # Check to see if snippet exists. If not, don't add it. Write that check here.
     myFile = myFile.strip()
-    print(str(myFile)+"\n")
+    print("\nProcessing this file: " + str(myFile))
     #myFile = str(myFile) + "\\keywords\\"
     myKeywordFile = "\\keywords\\" + str(myFile)
     myIDFile = "\\identifier\\" + str(myFile)
@@ -164,7 +165,7 @@ for myFile in myFileList:
         keywordFlag = 0
         myFile = "\\existing\\" + str(myFile)
         myFile = os.path.join(os.getcwd()+str(myFile))
-        print("TRYING TO READ FROM THIS FILE: " + str(myFile))
+        print("READING FROM THIS FILE: " + str(myFile))
         xml_content = open(myFile, 'r')
         data = xml_content.read()
         #data = data.replace('<?xml version="1.0" encoding="UTF-8"?>','')
@@ -188,92 +189,105 @@ for myFile in myFileList:
         data = xml_content.read()
         data = data.replace('<?xml version="1.0" encoding="UTF-8"?>','')
         data = data.strip()
-        root = ET.fromstring(data)
+        skipThisFile = False
+        try:
+            root = ET.fromstring(data)
+        except:
+            badFileList.append(str(myFile))
+            skipThisFile = True
+        
+        if skipThisFile == False:
         # Search XML for a few things
         # Get Inport ID
-        inportID = searchXML(root, inportIDLocation)
+            inportID = searchXML(root, inportIDLocation)
         
-        print("HERE IS YOUR INPORT ID: " + str(inportID))
+            print("HERE IS YOUR INPORT ID: " + str(inportID))
         # Get Organization Name
-        orgName = searchXML(root, orgNameLocation)
+            orgName = searchXML(root, orgNameLocation)
         #print("HERE IS YOUR ORGANIZATION NAME: " + str(orgName))
         # Get Title
-        title = searchXML(root, titleLocation)
+            title = searchXML(root, titleLocation)
         #print("HERE IS YOUR TITLE: " + str(title))
         # Get Place Keywords
-        placeKeywords = searchXML(root, placeKeywordsLocation1)
-        if placeKeywords is None:
-            placeKeywords = searchXML(root, placeKeywordsLocation2)
+            placeKeywords = searchXML(root, placeKeywordsLocation1)
+            if placeKeywords is None:
+                placeKeywords = searchXML(root, placeKeywordsLocation2)
         #print("HERE ARE YOUR KEYWORDS: ")
         #for keyword in placeKeywords:
             #print(" " + str(keyword))
 
 
         #Standardize input and output
-        standardizedPlaceKeywords = []
-        standardizedTitleKeywords = []
-        standardizedPlaceMatch = []
-        standardizedPlaceMatchCounty = []
+            standardizedPlaceKeywords = []
+            standardizedTitleKeywords = []
+            standardizedPlaceMatch = []
+            standardizedPlaceMatchCounty = []
 
-        for item in placeKeywords:
-            item = item.lower()
-            standardizedPlaceKeywords.append(item)
+            for item in placeKeywords:
+                item = item.lower()
+                standardizedPlaceKeywords.append(item)
 
-        for item in title_match_keywords:
-            item = item.lower()
-            standardizedTitleKeywords.append(item)
+            for item in title_match_keywords:
+                item = item.lower()
+                standardizedTitleKeywords.append(item)
 
-        for item in place_match_keywords_reg:
-            item = item.lower()
-            standardizedPlaceMatch.append(item)
+            for item in place_match_keywords_reg:
+                item = item.lower()
+                standardizedPlaceMatch.append(item)
 
-        for item in place_match_keywords_county:
-            item = item.lower()
-            standardizedPlaceMatchCounty.append(item)
+            for item in place_match_keywords_county:
+                item = item.lower()
+                standardizedPlaceMatchCounty.append(item)
     
         # Title Filter
-        for keyword in standardizedTitleKeywords:
+            for keyword in standardizedTitleKeywords:
             #print("LOOKING FOR THIS KEYWORD IN THE TITLE: " + keyword)
-            if keyword in title.lower():
+                if keyword in title.lower():
                 #print("FOUND IT!\n")
-                titleFlag = 1
-                break
-        if titleFlag == 1:
-            if "c-cap" in title.lower():
-                if "forest fragmentation" in title.lower():
-                    print("EXCLUDE THIS RECORD")
-                    titleFlag = 0
-            if "lidar" in title.lower() or "ifsar" in title.lower():
-                print("LIDAR OR IFSAR RECORD FOUND - TRIGGER DIFFERENT KEYWORD SEARCH?")
+                    titleFlag = 1
+                    break
+            if titleFlag == 1:
+                if "c-cap" in title.lower():
+                    if "forest fragmentation" in title.lower():
+                        print("EXCLUDE THIS RECORD")
+                        titleFlag = 0
+                if "lidar" in title.lower() or "ifsar" in title.lower():
+                    print("LIDAR OR IFSAR RECORD FOUND - TRIGGER DIFFERENT KEYWORD SEARCH?")
 
         # Keyword Search
-        for keyword in standardizedPlaceMatch:
+            for keyword in standardizedPlaceMatch:
             #print("LOOKING FOR THIS KEYWORD IN PLACE KEYWORDS: " + keyword)
-            if keyword in standardizedPlaceKeywords:
+                if keyword in standardizedPlaceKeywords:
                 #print("FOUND IT!")
-                if keyword.lower() not in searchTheseLocationsByCounty:
-                    keywordFlag = 1
-                break
+                    if keyword.lower() not in searchTheseLocationsByCounty:
+                        keywordFlag = 1
+                    break
 
         #print("LOOKING FOR COUNTY STUFF NOW")
-        for location in searchTheseLocationsByCounty:
+            for location in searchTheseLocationsByCounty:
             #print("Looking for this location: " + location)
-            if location in standardizedPlaceKeywords:
-                print("COUNTY SEARCH NECESSARY\n")
-                for keyword in standardizedPlaceMatchCounty:
+                if location in standardizedPlaceKeywords:
+                    print("COUNTY SEARCH NECESSARY\n")
+                    for keyword in standardizedPlaceMatchCounty:
                     #print("Looking for this county keyword: " + keyword)
-                    if keyword in standardizedPlaceKeywords:
+                        if keyword in standardizedPlaceKeywords:
                         #print("FOUND THIS ONE: " + keyword)
-                        keywordFlag = 1
-                        break
-                if keywordFlag == 1:
-                    print("COUNTY RECORD APPROVED")
-                elif keywordFlag == 0:
-                    print("BAD COUNTY RECORD")
+                            keywordFlag = 1
+                            break
+                    if keywordFlag == 1:
+                        print("COUNTY RECORD APPROVED")
+                    elif keywordFlag == 0:
+                        print("BAD COUNTY RECORD")
 
 # move files that meet filtering criteria
 # to /nodc/projects/coris/Metadata/OCMharvest/existing - for first run
 # to /nodc/projects/coris/Metadata/OCMharvest/latest - for weekly runs 
+    print("Reached end of processing on this file")
+    
+if len(badFileList)>0:
+    print("\nHere is a list of files that the script could not access. Please check the XML for validity: ")
+    for badFile in badFileList:
+        print(str(badFile))
 
 
 

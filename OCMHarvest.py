@@ -70,7 +70,7 @@ for metadataRecord in latestList:
         file1 = latest + "/" + str(metadataRecord)
         file2 = existing + "/"+ str(metadataRecord)
         comparison = filecmp.cmp(file1, file2, shallow = False)
-        #print("Files are the same:", comparison)
+        #print("Files are the same: ", comparison)
 
         if comparison == False:
             revisedFileList.append(metadataRecord)
