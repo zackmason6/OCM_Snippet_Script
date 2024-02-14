@@ -283,11 +283,13 @@ for myFile in myFileList:
 # to /nodc/projects/coris/Metadata/OCMharvest/existing - for first run
 # to /nodc/projects/coris/Metadata/OCMharvest/latest - for weekly runs 
     print("Reached end of processing on this file")
-    
+
 if len(badFileList)>0:
     print("\nHere is a list of files that the script could not access. Please check the XML for validity: ")
-    for badFile in badFileList:
-        print(str(badFile))
+    with open("badFileList.txt", "w", encoding="utf-8") as badFileListDoc:
+        for badFile in badFileList:
+            print(str(badFile))
+            badFileListDoc.write(str(badFile)+"\n")
 
 
 
