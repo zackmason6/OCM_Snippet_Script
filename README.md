@@ -50,11 +50,7 @@ This repository contains:
   <ul>
     <li>Right now this is the logic flow:</li>
     <ol>
-      <li>Script goes keyword by keyword through this list: 
-        
-        'American Samoa','Manua','Ofu','Olosega','Rose','Swains','Tutuila','St. Croix','St. John','St. Thomas','Florida','CNMI','Puerto Rico','Guam','Hawaii','Oahu','Niihau','Kauai','Maui','Molokai','Lanai','St Thomas','St Croix','St John','Keys','U.S. Virgin Islands','US Virgin Islands','Key West','Dry Torturgas'  
-        
-        If it finds any of these keywords even as a substring in the metadata file's keywords it will trigger the next step. If none of these are found, the record is approved for further work.</li>
+      <li>Script goes keyword by keyword through this list: - - 'American Samoa','Manua','Ofu','Olosega','Rose','Swains','Tutuila','St. Croix','St. John','St. Thomas','Florida','CNMI','Puerto Rico','Guam','Hawaii','Oahu','Niihau','Kauai','Maui','Molokai','Lanai','St Thomas','St Croix','St John','Keys','U.S. Virgin Islands','US Virgin Islands','Key West','Dry Torturgas'  - - If it finds any of these keywords even as a substring in the metadata file's keywords it will trigger the next step. If none of these are found, the record is approved for further work.</li>
       <li>Search all metadata keywords for another list of keywords. Currently this list just contains "florida." If a metadata record contains anything in this list, it means that it will necessitate a county search of the metadata record, as shown in the next step. If none of these keywords turn up in the metadata record, it is approved for further work.</li>
       <li>Search through the metadata record for a list of counties. If any are found, the record is approved. Otherwise it is marked as being potentially out of scope</li>
     </ol>
