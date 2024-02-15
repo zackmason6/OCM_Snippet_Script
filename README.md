@@ -55,13 +55,24 @@ This repository contains:
       <li>Search through the metadata record for a list of counties. If any are found, the record is approved. Otherwise it is marked as being potentially out of scope</li>
     </ol>
   </ul>
-  <li>The script needs to copy files from existing to no-harvest</li>
+  <li>Discuss logic for title keyword search</li>
+  <ul>
+    <li>The application searches for the keywords in the following list and flags the record. - - 'C-CAP','Land cover','lidar','ifsar', 'Scanned Imagery' - - However, it doesn't actually do anything differently with these records. What should be done?</li>
+  <li>Check old scripts for other search parameters. Special operation for LIDAR or IFSAR records?</li>
+  </ul>
+  <li>Discuss when and where to copy/move edited files</li>
+  <ul>
+    <li>Does the script need to copy files from existing to no-harvest at some point?</li>
+    <li>I have this written in my notes: /nodc/projects/coris/Metadata/OCMharvest/existing - for first run - - to /nodc/projects/coris/Metadata/OCMharvest/latest - for weekly runs</li>
+    <li>What does the above really mean? Why the difference?</li>
+    <li>Currently, OCM-Harvest copies any new or edited files to the /existing directory. That should likely be modified to happen after xpathTest identifies records that don't meet requirements</li>
+  </ul>
+  
   <li>Add functionality to fix frequent keyword errors</li>
   <li>Implement configuration file to add keyword search parameters for locations like Florida counties</li>
   <ul>
     <li>Add to the list of locations to search by county</li>
   </ul>
-  <li>Check old scripts for other search parameters. Special operation for LIDAR or IFSAR records?</li>
   <li>Need to implement functionality to check for deleted files</li>
     <ul>
       <li>Compare records found in latest/existing to records in the WAF. If something is missing from existing/latest do we pull it from the WAF or just send an alert?</li>
