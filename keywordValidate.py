@@ -39,11 +39,12 @@ checkTheseManually = []
 
 with open("badFileList.txt", "r", encoding="utf-8") as badFiles:
     rawBadFileList = badFiles.readlines()
-    for badFile in rawBadFileList:
-        badFile = badFile.strip()
-        badFileList.append(str(badFile))
-#for badFile in badFileList:
-    #print("Found this bad xml file: " + str(badFile))
+    if len(rawBadFileList)>0:
+        for badFile in rawBadFileList:
+            badFile = badFile.strip()
+            badFileList.append(str(badFile))
+            #for badFile in badFileList:
+                #print("Found this bad xml file: " + str(badFile))
 
 myFileList = [] # Set up data structure to hold list of files that need to be operated on
 with open("OCM_Metadata_For_Snippets.txt", "r", encoding="utf-8") as filesToValidate:   # Open file that contains filenames that need to be checked
@@ -55,14 +56,6 @@ for line in Lines:
     myFile = os.path.join(os.getcwd()+str(myFile))
     if str(myFile) not in badFileList:
         myFileList.append(myFile) # Create list. Each list item is one line from the above file
-
-# The block below is commented out as unnecessary. It just prints the list of files and the contents of each
-# This was really just for testing the output of a single xml file.
-#print("MY FILE LIST: " + str(myFileList))
-#for item in myFileList:
-#    with open(item, "r") as xmlFile:
-#            data = xmlFile.read()
-#    print(str(data))
 
 # Set up a dictionary of namespaces
 namespaces = {
@@ -180,7 +173,7 @@ for myFile in myFileList: # Iterate over each file in the file list and validate
         data = xml_content.read() # Read in xml data as a string
         root = ET.fromstring(data) # Use element tree to get a tree from the string data
     except:
-        print("Couldn't read this xml file: " + str(myFile))
+        #print("Couldn't read this xml file: " + str(myFile))
         checkTheseManually.append(str(myFile))
     myKeywordDict = searchXML(root, keywordsLocation) # get a dictionary of thesaurus type and keywords found in the xml data
     placeKeywordsFromFile = myKeywordDict.get("CoRIS Place Thesaurus") # Grab all place keywords from the keyword dictionary

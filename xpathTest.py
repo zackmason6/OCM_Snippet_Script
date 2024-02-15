@@ -26,6 +26,7 @@ This is file number 2 of 3 for this workflow.
 
 badFileList = []
 myFileList = []
+outOfScopeFiles = []
 
 with open("OCM_Metadata_For_Snippets.txt", "r", encoding="utf-8") as filesToEdit:
     Lines = filesToEdit.readlines()
@@ -227,6 +228,8 @@ for myFile in myFileList:
                 item = item.lower()
                 standardizedPlaceKeywords.append(item)
 
+
+            # Probably dont do these three blocks for every file. Just do it once at the beginning and reuse!!!!
             for item in title_match_keywords:
                 item = item.lower()
                 standardizedTitleKeywords.append(item)
@@ -241,9 +244,9 @@ for myFile in myFileList:
     
         # Title Filter
             for keyword in standardizedTitleKeywords:
-            #print("LOOKING FOR THIS KEYWORD IN THE TITLE: " + keyword)
+                print("LOOKING FOR THIS KEYWORD IN THE TITLE: " + keyword)
                 if keyword in title.lower():
-                #print("FOUND IT!\n")
+                    print("FOUND IT!\n")
                     titleFlag = 1
                     break
             if titleFlag == 1:
@@ -251,33 +254,51 @@ for myFile in myFileList:
                     if "forest fragmentation" in title.lower():
                         print("EXCLUDE THIS RECORD")
                         titleFlag = 0
+                        outOfScopeFiles.append(str(myFile))
                 if "lidar" in title.lower() or "ifsar" in title.lower():
                     print("LIDAR OR IFSAR RECORD FOUND - TRIGGER DIFFERENT KEYWORD SEARCH?")
 
-        # Keyword Search
-            for keyword in standardizedPlaceMatch:
-            #print("LOOKING FOR THIS KEYWORD IN PLACE KEYWORDS: " + keyword)
-                if keyword in standardizedPlaceKeywords:
-                #print("FOUND IT!")
-                    if keyword.lower() not in searchTheseLocationsByCounty:
-                        keywordFlag = 1
+        # Keyword Search - if this finds a single keyword from the list it flags the metadata record to be checked further
+            foundKeyword = 0
+            print("\n" + str(myFile)+" KEYWORD SEARCH BEGINNING\n")
+            for keyword in standardizedPlaceMatch: # For each keyword in this pre-determined list
+                print("LOOKING FOR THIS KEYWORD IN PLACE KEYWORDS: " + keyword)
+                res = [i for i in standardizedPlaceKeywords if keyword in i]
+                if len(res)>0:
+                # If this keyword is found in the metadata place keywords:
+                    print("FOUND KEYWORD from standardizedPlaceMatch!")
+                    foundKeyword = 1
                     break
 
-        #print("LOOKING FOR COUNTY STUFF NOW")
-            for location in searchTheseLocationsByCounty:
-            #print("Looking for this location: " + location)
-                if location in standardizedPlaceKeywords:
-                    print("COUNTY SEARCH NECESSARY\n")
-                    for keyword in standardizedPlaceMatchCounty:
-                    #print("Looking for this county keyword: " + keyword)
-                        if keyword in standardizedPlaceKeywords:
-                        #print("FOUND THIS ONE: " + keyword)
-                            keywordFlag = 1
+        # Application has decided that a closer look is needed
+            if foundKeyword == 1:
+                #for keyword in standardizedPlaceKeywords: # For each place keyword in the metadata record:
+                    for location in searchTheseLocationsByCounty: # Iterate over all county search locations
+                        res = [i for i in standardizedPlaceKeywords if str(location).lower() in i] # check to see if each location exists as a substring of each metadata keyword
+                        if len(res)<1: # if the location in the searchTheseLocationsByCounty list is not in the metadata keywords even as a substring:
+                            keywordFlag = 1 # assign a value of 1. 
+                            print("Search by county keyword not found in metadata")
+                        elif len(res)>0: # IF ANY SEARCH BY COUNTY KEYWORDS ARE FOUND
+                            print("KEYWORD IN SEARCH BY COUNTY LIST. COUNTY SEARCH NECESSARY")
+                            keywordFlag = 0 # MARK AS A POTENTIAL BAD RECORD AND BREAK THE LOOP
                             break
-                    if keywordFlag == 1:
-                        print("COUNTY RECORD APPROVED")
-                    elif keywordFlag == 0:
-                        print("BAD COUNTY RECORD")
+
+            # AN EVEN CLOSER LOOK IS NEEDED - BEGIN COUNTY SEARCH
+            if keywordFlag == 0:
+                countyKeywordFlag = 0
+                print("Looking through this list of metadata keywords: " + str(standardizedPlaceKeywords))
+                for keyword in standardizedPlaceMatchCounty: # Look through list of predetermined county keywords
+                    print("Looking for this county keyword: " + keyword)
+                    res = [i for i in standardizedPlaceKeywords if keyword in i]
+                    if len(res)>0: #if keyword in standardizedPlaceKeywords:
+                        print("FOUND COUNTY KEYWORD(S): " + str(res))
+                        countyKeywordFlag = 1
+                        break
+                if countyKeywordFlag == 1:
+                    print("COUNTY RECORD APPROVED")
+                elif countyKeywordFlag == 0:
+                    print("BAD COUNTY RECORD")
+                    outOfScopeFiles.append(str(myFile))
 
 # move files that meet filtering criteria
 # to /nodc/projects/coris/Metadata/OCMharvest/existing - for first run
@@ -290,6 +311,13 @@ if len(badFileList)>0:
         for badFile in badFileList:
             print(str(badFile))
             badFileListDoc.write(str(badFile)+"\n")
+
+if len(outOfScopeFiles)>0:
+    print("\nHere is a list of files that were deemed to be out of scope. These should be manually checked.")
+    with open("outOfScopeFileList.txt", "w", encoding="utf-8") as outOfScopeFileListDoc:
+        for outOfScopeFile in outOfScopeFiles:
+            print(str(outOfScopeFile))
+            outOfScopeFileListDoc.write(str(outOfScopeFile)+"\n")
 
 
 

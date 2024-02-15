@@ -76,7 +76,7 @@ for metadataRecord in latestList:
             revisedFileList.append(metadataRecord)
 
     else:
-        print("New Record found")
+        #print("New Record found")
         # metadataRecord must be a new file? I guess for now at least add it to the list
         newFileList.append(metadataRecord)
 
