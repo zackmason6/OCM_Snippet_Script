@@ -32,31 +32,47 @@ This is file number 3 of 3 for this workflow.
       from step 1)
 
 """
+
+def getFileList(myDirectory):
+    """This function gets a list of xml files from the myDirectory variable.
+    Specifically, the os.listdir command gets a list of everything in the directory
+    and then this function iterates over that list and grabs everything where the
+    filename ends with .xml. These are then added to another list.
+
+    Args:
+        myDirectory (string): This directory is specified by the user.
+
+    Returns:
+        list: This is a list of xml files in the user's current directory.
+    """
+    dataFiles = []
+    myFiles = os.listdir(myDirectory)
+    for file in myFiles:
+        if file.endswith(".xml"):
+            dataFiles.append(file)
+    return dataFiles
+
+
 rawBadFileList = []
 badFileList = []
 
 checkTheseManually = []
 
-with open("badFileList.txt", "r", encoding="utf-8") as badFiles:
-    rawBadFileList = badFiles.readlines()
-    if len(rawBadFileList)>0:
-        for badFile in rawBadFileList:
-            badFile = badFile.strip()
-            badFileList.append(str(badFile))
-            #for badFile in badFileList:
-                #print("Found this bad xml file: " + str(badFile))
+#with open("badFileList.txt", "r", encoding="utf-8") as badFiles:
+#    rawBadFileList = badFiles.readlines()
+#    if len(rawBadFileList)>0:
+#        for badFile in rawBadFileList:
+#            badFile = badFile.strip()
+#            badFileList.append(str(badFile))
+#            #for badFile in badFileList:
+#                #print("Found this bad xml file: " + str(badFile))
+#    myFile = "\\existing\\" + str(line)
+#    myFile = os.path.join(os.getcwd()+str(myFile))
+#    if str(myFile) not in badFileList:
+#        myFileList.append(myFile) # Create list. Each list item is one line from the above file
 
-myFileList = [] # Set up data structure to hold list of files that need to be operated on
-with open("OCM_Metadata_For_Snippets.txt", "r", encoding="utf-8") as filesToValidate:   # Open file that contains filenames that need to be checked
-    Lines = filesToValidate.readlines() # read each line of the file
-for line in Lines:
-    line = line.strip()
-
-    myFile = "\\existing\\" + str(line)
-    myFile = os.path.join(os.getcwd()+str(myFile))
-    if str(myFile) not in badFileList:
-        myFileList.append(myFile) # Create list. Each list item is one line from the above file
-
+existing = os.path.join(os.getcwd()+"\\existing\\")
+myFileList = getFileList(existing)
 # Set up a dictionary of namespaces
 namespaces = {
     'gco':'http://www.isotc211.org/2005/gco',
@@ -167,6 +183,8 @@ badKeywordDict = {} # Set up blank dictionary to house the bad keyword dictionar
 
 for myFile in myFileList: # Iterate over each file in the file list and validate their keywords.
     #print("Processing this file: " + str(myFile))
+    myFile = "\\existing\\" + str(myFile)
+    myFile = os.path.join(os.getcwd()+str(myFile))
     tempDict = {} # Set up a temporary dictionary for some reason? THIS SHOULD LIKELY BE REMOVED! ARTIFACT OF A PREVIOUS BUILD OR SOMETHING
     xml_content = open(myFile, 'r')
     try:

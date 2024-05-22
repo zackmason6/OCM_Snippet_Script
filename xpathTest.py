@@ -24,9 +24,7 @@ This is file number 2 of 3 for this workflow.
 
 """
 
-badFileList = []
 myFileList = []
-outOfScopeFiles = []
 
 with open("OCM_Metadata_For_Snippets.txt", "r", encoding="utf-8") as filesToEdit:
     Lines = filesToEdit.readlines()
@@ -34,8 +32,6 @@ with open("OCM_Metadata_For_Snippets.txt", "r", encoding="utf-8") as filesToEdit
 for line in Lines:
     #print("Got this line: " + str(line))
     myFileList.append(line)
-    
-
 
 ###### ADD IN CONFIGURATION FILE FOR THE FOLLOWING KEYWORDS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ###### IF FILE MARKED AS NOT APPROPRIATE, DON'T COPY IT OVER
@@ -68,6 +64,16 @@ placeKeywordsLocation2 = ".//gmd:identificationInfo/gmd:MD_DataIdentification/gm
 editDateLocation = ".//gmd:dateStamp/gco:DateTime"
 
 def searchXML(root, xpath):
+    """
+    Search XML element by XPath.
+
+        Args:
+            root (Element): Root element of XML tree.
+            xpath (str): XPath expression to search for.
+
+        Returns:
+            str or List[str]: Text content of the found element(s).
+    """
     elementList = []
     elements = root.findall(xpath, namespaces)
     if elements is not None:
@@ -89,11 +95,28 @@ def searchXML(root, xpath):
         print("Could not find element")
 
 def register_all_namespaces(filename):
+    """
+        Register namespaces from XML file.
+
+        Args:
+            filename (str): Path to the XML file.
+    """
     namespaces = dict([node for _, node in ET.iterparse(filename, events=['start-ns'])])
     for ns in namespaces:
         ET.register_namespace(ns, namespaces[ns])
 
 def insertSnippet(data,spl_word,snippetData):
+    """
+        Insert snippet into XML data.
+
+        Args:
+            data (str): Original XML data.
+            spl_word (str): Split word to insert snippet.
+            snippet_data (str): Snippet data to insert.
+
+        Returns:
+            str: XML data with inserted snippet.
+    """
     # Split xml file and append keywords snippet
     firstPart = data.split(spl_word,1)[0]
     secondPart = "         " + spl_word + data.split(spl_word,1)[1]
@@ -102,6 +125,12 @@ def insertSnippet(data,spl_word,snippetData):
     return fullXML
 
 def updateEditDate(myXML):
+    """
+        Update edit date in the XML file.
+
+        Args:
+            my_xml (str): Path to the XML file.
+    """
     register_all_namespaces(myXML) # Keeps namespaces from being modified
     tree = ET.parse(myXML)
     myRoot = tree.getroot()
@@ -116,17 +145,21 @@ def updateEditDate(myXML):
         editDate.text = (str(currentTime))
         tree.write(myXML)
 
-        #2023-07-03T17:07:52
-        #2024-01-05T15:18:05
-        
-        # Here is the xpath: /gmi:MI_Metadata/gmd:dateStamp/gco:DateTime
-        ############################################################################
-
+existing = os.path.join(os.getcwd()+"\\existing\\")
+latest = os.path.join(os.getcwd()+"\\latest\\")
 for myFile in myFileList:
-    # Check to see if snippet exists. If not, don't add it. Write that check here.
+    
+####################################################################################
+# NEED TO CHECK IF RECORDS ALREADY HAVE CORIS KEYWORDS! DONT WANT TO ADD THEM TWICE.
+# This is currently not implemented.
+# If the snippet exists you could likely just read it as a string and compare it to
+# the xml file's string data as a substring. If snippet is in file data: do nothing
+# THIS IS ACTUALLY LOW PRIORITY - shouldn't actually be anything in LATEST with the
+# CoRIS keywords already. Not positive but this might be a very unlikely edge case.
+####################################################################################
+
     myFile = myFile.strip()
-    print("\nProcessing this file: " + str(myFile))
-    #myFile = str(myFile) + "\\keywords\\"
+    print(str(myFile)+"\n")
     myKeywordFile = "\\keywords\\" + str(myFile)
     myIDFile = "\\identifier\\" + str(myFile)
     keyWordSnippetFile = os.path.join(os.getcwd()+myKeywordFile)
@@ -136,13 +169,6 @@ for myFile in myFileList:
     #print("Looking for this ID snippet file: " + str(idSnippetFile))
 
     doTheSnippetsExist = True
-    
-    if os.path.exists(keyWordSnippetFile) == True:
-        keywordSnippet = open(keyWordSnippetFile, 'r')
-        keywordSnippetData = keywordSnippet.read()
-    else:
-        print("Couldn't find keyword snippet for this record: " + str(myFile))
-        doTheSnippetsExist = False
 
     if os.path.exists(keyWordSnippetFile) == True:
         keywordSnippet = open(keyWordSnippetFile, 'r')
@@ -152,7 +178,7 @@ for myFile in myFileList:
     else:
         print("Couldn't find keyword snippet for this record: " + str(myFile))
         doTheSnippetsExist = False
-   
+
     if os.path.exists(idSnippetFile) == True:
         idSnippet = open(idSnippetFile, "r")
         garbageLine = idSnippet.readline()
@@ -162,11 +188,9 @@ for myFile in myFileList:
         doTheSnippetsExist = False
 
     if doTheSnippetsExist == True:
-        titleFlag = 0
-        keywordFlag = 0
         myFile = "\\existing\\" + str(myFile)
         myFile = os.path.join(os.getcwd()+str(myFile))
-        print("READING FROM THIS FILE: " + str(myFile))
+        print("TRYING TO READ FROM THIS FILE: " + str(myFile))
         xml_content = open(myFile, 'r')
         data = xml_content.read()
         #data = data.replace('<?xml version="1.0" encoding="UTF-8"?>','')
@@ -181,148 +205,12 @@ for myFile in myFileList:
 
         idSplitString = "<gmd:identifier>"
         xmlStringWithID = insertSnippet(xmlStringWithKeywords,idSplitString,idSnippetData)
-
+    
         with open(myFile, "w", encoding="utf-8") as xml_file:
         # Write the XML content to the file
             xml_file.write(xmlStringWithID)
-
-        xml_content = open(myFile, 'r', encoding="utf-8")
-        data = xml_content.read()
-        data = data.replace('<?xml version="1.0" encoding="UTF-8"?>','')
-        data = data.strip()
-        skipThisFile = False
-        try:
-            root = ET.fromstring(data)
-        except:
-            badFileList.append(str(myFile))
-            skipThisFile = True
-        
-        if skipThisFile == False:
-        # Search XML for a few things
-        # Get Inport ID
-            inportID = searchXML(root, inportIDLocation)
-        
-            print("HERE IS YOUR INPORT ID: " + str(inportID))
-        # Get Organization Name
-            orgName = searchXML(root, orgNameLocation)
-        #print("HERE IS YOUR ORGANIZATION NAME: " + str(orgName))
-        # Get Title
-            title = searchXML(root, titleLocation)
-        #print("HERE IS YOUR TITLE: " + str(title))
-        # Get Place Keywords
-            placeKeywords = searchXML(root, placeKeywordsLocation1)
-            if placeKeywords is None:
-                placeKeywords = searchXML(root, placeKeywordsLocation2)
-        #print("HERE ARE YOUR KEYWORDS: ")
-        #for keyword in placeKeywords:
-            #print(" " + str(keyword))
-
-
-        #Standardize input and output
-            standardizedPlaceKeywords = []
-            standardizedTitleKeywords = []
-            standardizedPlaceMatch = []
-            standardizedPlaceMatchCounty = []
-
-            for item in placeKeywords:
-                item = item.lower()
-                standardizedPlaceKeywords.append(item)
-
-
-            # Probably dont do these three blocks for every file. Just do it once at the beginning and reuse!!!!
-            for item in title_match_keywords:
-                item = item.lower()
-                standardizedTitleKeywords.append(item)
-
-            for item in place_match_keywords_reg:
-                item = item.lower()
-                standardizedPlaceMatch.append(item)
-
-            for item in place_match_keywords_county:
-                item = item.lower()
-                standardizedPlaceMatchCounty.append(item)
-    
-        # Title Filter
-            for keyword in standardizedTitleKeywords:
-                print("LOOKING FOR THIS KEYWORD IN THE TITLE: " + keyword)
-                if keyword in title.lower():
-                    print("FOUND IT!\n")
-                    titleFlag = 1
-                    break
-            if titleFlag == 1:
-                if "c-cap" in title.lower():
-                    if "forest fragmentation" in title.lower():
-                        print("EXCLUDE THIS RECORD")
-                        titleFlag = 0
-                        outOfScopeFiles.append(str(myFile))
-                if "lidar" in title.lower() or "ifsar" in title.lower():
-                    print("LIDAR OR IFSAR RECORD FOUND - TRIGGER DIFFERENT KEYWORD SEARCH?")
-
-        # Keyword Search - if this finds a single keyword from the list it flags the metadata record to be checked further
-            foundKeyword = 0
-            print("\n" + str(myFile)+" KEYWORD SEARCH BEGINNING\n")
-            for keyword in standardizedPlaceMatch: # For each keyword in this pre-determined list
-                print("LOOKING FOR THIS KEYWORD IN PLACE KEYWORDS: " + keyword)
-                res = [i for i in standardizedPlaceKeywords if keyword in i]
-                if len(res)>0:
-                # If this keyword is found in the metadata place keywords:
-                    print("FOUND KEYWORD from standardizedPlaceMatch!")
-                    foundKeyword = 1
-                    break
-
-        # Application has decided that a closer look is needed
-            if foundKeyword == 1:
-                #for keyword in standardizedPlaceKeywords: # For each place keyword in the metadata record:
-                    for location in searchTheseLocationsByCounty: # Iterate over all county search locations
-                        res = [i for i in standardizedPlaceKeywords if str(location).lower() in i] # check to see if each location exists as a substring of each metadata keyword
-                        if len(res)<1: # if the location in the searchTheseLocationsByCounty list is not in the metadata keywords even as a substring:
-                            keywordFlag = 1 # assign a value of 1. 
-                            print("Search by county keyword not found in metadata")
-                        elif len(res)>0: # IF ANY SEARCH BY COUNTY KEYWORDS ARE FOUND
-                            print("KEYWORD IN SEARCH BY COUNTY LIST. COUNTY SEARCH NECESSARY")
-                            keywordFlag = 0 # MARK AS A POTENTIAL BAD RECORD AND BREAK THE LOOP
-                            break
-
-            # AN EVEN CLOSER LOOK IS NEEDED - BEGIN COUNTY SEARCH
-            if keywordFlag == 0:
-                countyKeywordFlag = 0
-                print("Looking through this list of metadata keywords: " + str(standardizedPlaceKeywords))
-                for keyword in standardizedPlaceMatchCounty: # Look through list of predetermined county keywords
-                    print("Looking for this county keyword: " + keyword)
-                    res = [i for i in standardizedPlaceKeywords if keyword in i]
-                    if len(res)>0: #if keyword in standardizedPlaceKeywords:
-                        print("FOUND COUNTY KEYWORD(S): " + str(res))
-                        countyKeywordFlag = 1
-                        break
-                if countyKeywordFlag == 1:
-                    print("COUNTY RECORD APPROVED")
-                elif countyKeywordFlag == 0:
-                    print("BAD COUNTY RECORD")
-                    outOfScopeFiles.append(str(myFile))
-
-# move files that meet filtering criteria
-# to /nodc/projects/coris/Metadata/OCMharvest/existing - for first run
-# to /nodc/projects/coris/Metadata/OCMharvest/latest - for weekly runs 
-    print("Reached end of processing on this file")
-
-if len(badFileList)>0:
-    print("\nHere is a list of files that the script could not access. Please check the XML for validity: ")
-    with open("badFileList.txt", "w", encoding="utf-8") as badFileListDoc:
-        for badFile in badFileList:
-            print(str(badFile))
-            badFileListDoc.write(str(badFile)+"\n")
-
-if len(outOfScopeFiles)>0:
-    print("\nHere is a list of files that were deemed to be out of scope. These should be manually checked.")
-    with open("outOfScopeFileList.txt", "w", encoding="utf-8") as outOfScopeFileListDoc:
-        for outOfScopeFile in outOfScopeFiles:
-            print(str(outOfScopeFile))
-            outOfScopeFileListDoc.write(str(outOfScopeFile)+"\n")
-
-
-
-
-
-
+    else:
+        removeThisRecord = existing + "/" + str(myFile)
+        os.remove(removeThisRecord)
 
 
