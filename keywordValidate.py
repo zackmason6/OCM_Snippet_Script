@@ -128,6 +128,45 @@ def createKeywordList(fileName):
             newKeywordList.append(str(line))
     return newKeywordList
 
+def fixTheKeywords(fileToFix,fixedKeywordDictionary):
+    register_all_namespaces(fileToFix) # Keeps namespaces from being modified
+    tree = ET.parse(fileToFix)
+    myRoot = tree.getroot()
+
+    writeItFlag = 0
+
+    for xmlKeyword in myRoot.findall(keywordsLocation, namespaces):
+        tempKeywordList = [] # create a temporary list to hold the search results
+        thesaurus = xmlKeyword.find("gmd:thesaurusName/gmd:CI_Citation/gmd:title/gco:CharacterString", namespaces) # find the appropriate thesaurus
+        if thesaurus is not None and "coris" in thesaurus.text.lower(): # If there is a coris thesaurus indicated:
+            #print("THESAURUS FOUND: " + thesaurus.text)
+            keywords = xmlKeyword.findall("gmd:keyword/gco:CharacterString",namespaces) # Find the keywords
+            for keyword in keywords:
+                print("FOUND THIS KEYWORD: " +keyword.text)
+
+                if keyword.text in fixedKeywordDictionary.keys():
+                    print("FOUND KEYWORD IN DICTIONARY")
+                    fixedKey = fixedKeywordDictionary.get(str(keyword.text))
+                    print("REPLACING WITH THIS KEYWORD: " + str(fixedKey))
+                    keyword.text = (fixedKey)
+                    writeItFlag = 1
+                else:
+                    print("Keyword not found in dictionary")
+    if writeItFlag == 1:
+        tree.write(fileToFix)
+
+def register_all_namespaces(filename):
+    """
+        Register namespaces from XML file.
+
+        Args:
+            filename (str): Path to the XML file.
+    """
+    print("WORKING ON THIS FILE: " + str(filename))
+    namespaces = dict([node for _, node in ET.iterparse(filename, events=['start-ns'])])
+    for ns in namespaces:
+        ET.register_namespace(ns, namespaces[ns])
+
 def validate_keywords(myKeywordList, myThesaurus, myFile):
     """
     This function cross-references keywords in the list of keywords found in each file with the
@@ -203,10 +242,23 @@ for myFile in myFileList: # Iterate over each file in the file list and validate
     validate_keywords(placeKeywordsFromFile, placeKeywordList, myFile) # Validate place keywords against place keyword dictionary
     validate_keywords(themeKeywordsFromFile, themeKeywordList, myFile) # Validate theme keywords against theme keyword dictionary
     validate_keywords(discoveryKeywordsFromFile, discoveryKeywordList, myFile) # Validate discovery keywords against discovery keyword dictionary
-    
+
 if len(badKeywordDict) >0:
     for key in badKeywordDict:
-        print("Bad keywords for " + str(key) + ": " +str(badKeywordDict[key])+"\n")
+        fixedKeywordDictionary={}
+        print("\nBad keywords found for " + str(key))
+        for badKey in badKeywordDict[key]:
+            #print (str(badKey))
+            if badKey.startswith("\n") or badKey.endswith("\n"):
+                newKey = badKey.strip("\n")
+                temporaryKeywordDict = {str(badKey):str(newKey)}
+                if str(badKey) not in fixedKeywordDictionary.keys():
+                    fixedKeywordDictionary.update(temporaryKeywordDict)
+        if key not in checkTheseManually:
+            fixTheKeywords(key,fixedKeywordDictionary) 
+
+                    
+
     # MAYBE ADD A MORE DETAILED PRINT OUTPUT WITH SOME EXPLANATION? 
     # printing the bad keywords is important - if we run on a cronjob just redirect it to email output.
     # Should this be sent to a spreadsheet or text file somewhere instead?

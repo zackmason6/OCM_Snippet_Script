@@ -230,13 +230,6 @@ filteredList = initialFilter(initialList)
 for file in filteredList:
     shutil.copy2(file, latest)
 
-#print("FILTERED LIST: " +str(filteredList))
-
-####################################################################
-# COPY OVER FILES IN THE FILTERED LIST TO THE LATEST DIRECTORY!!!!!
-# Not implemented yet. Definitely a priority.
-####################################################################
-
 existingList = getFileList(existing)
 print("EXISTING LIST: "+str(existingList))
 latestList = getFileList(latest)
